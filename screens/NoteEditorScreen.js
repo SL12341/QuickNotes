@@ -6,7 +6,6 @@ export default function NoteEditorScreen({ navigation, route }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [noteIndex, setNoteIndex] = useState(-1);
-
   const viewModel = new EditorViewModel();
 
   useEffect(() => {
@@ -23,8 +22,13 @@ export default function NoteEditorScreen({ navigation, route }) {
       return;
     }
 
-    await viewModel.saveNote(title, content, noteIndex);
-    navigation.goBack();
+    try {
+      await viewModel.saveNote(title, content, noteIndex);
+      navigation.goBack();
+    } catch (error) {
+      console.error('Save error:', error);
+      Alert.alert('Error', 'Failed to save note.');
+    }
   };
 
   return (

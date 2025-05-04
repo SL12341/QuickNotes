@@ -17,7 +17,7 @@ export default function HomeScreen({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
-  const confirmDelete = (index) => {
+  const confirmDelete = (idToDelete) => {
     Alert.alert(
       'Delete Note',
       'Are you sure?',
@@ -27,22 +27,24 @@ export default function HomeScreen({ navigation }) {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            const updatedNotes = await viewModel.deleteNote(index);
+            const index = notes.findIndex(n => n.id === idToDelete);
+            const updatedNotes = await viewModel.deleteNoteById(idToDelete);
             setNotes([...updatedNotes]);
           },
         },
       ]
     );
-  };
+  };  
 
-  const renderNote = ({ item, index }) => (
+  const renderNote = ({ item }) => (
     <TouchableOpacity
       style={styles.noteCard}
-      onPress={() => navigation.navigate('Edit Note', { note: item, index })}
-      onLongPress={() => confirmDelete(index)}
+      onPress={() => navigation.navigate('Edit Note', { note: item })}
+      onLongPress={() => confirmDelete(item.id)}
     >
       <Text style={styles.noteTitle}>{item.title}</Text>
       <Text style={styles.notePreview} numberOfLines={2}>{item.content}</Text>
+      <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleString()}</Text>
     </TouchableOpacity>
   );
 
@@ -63,7 +65,7 @@ export default function HomeScreen({ navigation }) {
 
       <FlatList
         data={filteredNotes}
-        keyExtractor={(_, i) => i.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={renderNote}
         contentContainerStyle={styles.list}
         ListEmptyComponent={<Text style={styles.emptyText}>No matching notes found.</Text>}
@@ -113,6 +115,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+  timestamp: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#888',
+    fontStyle: 'italic',
+  }, 
   addButtonText: { color: '#fff', fontSize: 32 },
   emptyText: { textAlign: 'center', color: '#999', marginTop: 40 },
 });

@@ -1,18 +1,14 @@
 import { getNotes, saveNotes } from '../services/storage';
 
 export default class HomeViewModel {
-  constructor() {
-    this.notes = [];
-  }
-
   async loadNotes() {
-    this.notes = await getNotes();
-    return this.notes;
+    return await getNotes(); // load fresh each time
   }
 
-  async deleteNote(index) {
-    this.notes.splice(index, 1);
-    await saveNotes(this.notes);
-    return this.notes;
+  async deleteNoteById(id) {
+    const notes = await getNotes(); // get current notes
+    const updatedNotes = notes.filter(n => n.id !== id); // filter out the note by ID
+    await saveNotes(updatedNotes); // save updated notes
+    return updatedNotes; // return the new list
   }
 }
