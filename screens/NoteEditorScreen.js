@@ -1,34 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import EditorViewModel from '../viewmodels/EditorViewModel';
 
 export default function NoteEditorScreen({ navigation, route }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [noteIndex, setNoteIndex] = useState(-1);
+
+  const viewModel = new EditorViewModel();
 
   useEffect(() => {
     if (route.params?.note) {
       setTitle(route.params.note.title);
       setContent(route.params.note.content);
+      setNoteIndex(route.params.index);
     }
-  }, []);
+  }, [route.params]);
 
-  const saveNote = async () => {
+  const handleSave = async () => {
     if (!title.trim()) {
-      Alert.alert('Validation', 'Title is required.');
+      Alert.alert('Validation', 'Title cannot be empty');
       return;
     }
 
-    const data = await AsyncStorage.getItem('NOTES');
-    const notes = data ? JSON.parse(data) : [];
-
-    if (route.params?.index >= 0) {
-      notes[route.params.index] = { title, content };
-    } else {
-      notes.push({ title, content });
-    }
-
-    await AsyncStorage.setItem('NOTES', JSON.stringify(notes));
+    await viewModel.saveNote(title, content, noteIndex);
     navigation.goBack();
   };
 
@@ -47,7 +42,7 @@ export default function NoteEditorScreen({ navigation, route }) {
         multiline
         style={styles.contentInput}
       />
-      <TouchableOpacity style={styles.saveButton} onPress={saveNote}>
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>Save Note</Text>
       </TouchableOpacity>
     </View>
