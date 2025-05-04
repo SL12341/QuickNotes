@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen({ navigation }) {
@@ -19,11 +19,33 @@ export default function HomeScreen({ navigation }) {
     <TouchableOpacity
       style={styles.noteCard}
       onPress={() => navigation.navigate('Edit Note', { note: item, index })}
+      onLongPress={() => handleDeleteNote(index)}
     >
       <Text style={styles.noteTitle}>{item.title}</Text>
       <Text style={styles.notePreview} numberOfLines={2}>{item.content}</Text>
     </TouchableOpacity>
-  );
+  );  
+
+  const handleDeleteNote = (indexToDelete) => {
+    Alert.alert(
+      'Delete Note',
+      'Are you sure you want to delete this note?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const data = await AsyncStorage.getItem('NOTES');
+            const notes = data ? JSON.parse(data) : [];
+            notes.splice(indexToDelete, 1);
+            await AsyncStorage.setItem('NOTES', JSON.stringify(notes));
+            setNotes(notes); // Refresh list
+          },
+        },
+      ]
+    );
+  };  
 
   return (
     <View style={styles.container}>
